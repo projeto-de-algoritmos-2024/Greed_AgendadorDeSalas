@@ -5,16 +5,17 @@ using namespace std;
 // Classe para representar uma matéria
 class Subject {
 public:
-    string name;
+    wstring name; // Agora usa wstring para suportar caracteres Unicode
     int startTime;
     int endTime;
 
-    Subject(string n, int start, int end) : name(n), startTime(start), endTime(end) {}
+    Subject(wstring n, int start, int end) : name(n), startTime(start), endTime(end) {}
 
     // Operador < para comparação
     bool operator<(const Subject& other) const {
-        if (endTime != other.endTime)
+        if (endTime != other.endTime) {
             return endTime < other.endTime;
+        }
         return startTime < other.startTime;
     }
 };
@@ -57,11 +58,11 @@ private:
 
 public:
     void addSubject() {
-        string name;
+        wstring name; // Input em wstring para suportar acentos
         int start, end;
 
-        cout << "Nome da matéria: ";
-        cin >> name;
+        wcout << L"Nome da matéria: "; // wcout para saída de wstring
+        wcin >> name;
         cout << "Horário de início (em formato 24h, ex: 1300): ";
         cin >> start;
         cout << "Horário de término (em formato 24h, ex: 1500): ";
@@ -84,19 +85,33 @@ public:
     }
 };
 
-// Funções para persistência dos dados
+// Funções para persistência dos dados (com correção de acentos)
 namespace Persistence {
+
+    string wstring_to_utf8(const wstring& wstr) {
+        wstring_convert<codecvt_utf8<wchar_t>> conv;
+        return conv.to_bytes(wstr);
+    }
+
+    wstring utf8_to_wstring(const string& str) {
+        wstring_convert<codecvt_utf8<wchar_t>> conv;
+        return conv.from_bytes(str);
+    }
+
     bool loadSchedule(Schedule& schedule) {
         ifstream infile("schedule.dat", ios::binary);
-        if (!infile) return false;
+        if (!infile) {
+            return false;
+        }
 
         int count;
         infile.read(reinterpret_cast<char*>(&count), sizeof(count));
         for (int i = 0; i < count; ++i) {
-            int nameLen, startTime, endTime;
-            infile.read(reinterpret_cast<char*>(&nameLen), sizeof(nameLen));
-            string name(nameLen, ' ');
-            infile.read(&name[0], nameLen);
+            int nameLenBytes, startTime, endTime;
+            infile.read(reinterpret_cast<char*>(&nameLenBytes), sizeof(nameLenBytes));
+            string nameUtf8(nameLenBytes, ' ');
+            infile.read(&nameUtf8[0], nameLenBytes);
+            wstring name = utf8_to_wstring(nameUtf8);
             infile.read(reinterpret_cast<char*>(&startTime), sizeof(startTime));
             infile.read(reinterpret_cast<char*>(&endTime), sizeof(endTime));
             schedule.getSubjects().emplace_back(name, startTime, endTime);
@@ -111,9 +126,10 @@ namespace Persistence {
         int count = schedule.getSubjects().size();
         outfile.write(reinterpret_cast<const char*>(&count), sizeof(count));
         for (const auto& subj : schedule.getSubjects()) {
-            int nameLen = subj.name.size();
-            outfile.write(reinterpret_cast<const char*>(&nameLen), sizeof(nameLen));
-            outfile.write(subj.name.c_str(), nameLen);
+            string nameUtf8 = wstring_to_utf8(subj.name);
+            int nameLenBytes = nameUtf8.size();
+            outfile.write(reinterpret_cast<const char*>(&nameLenBytes), sizeof(nameLenBytes));
+            outfile.write(nameUtf8.c_str(), nameLenBytes);
             outfile.write(reinterpret_cast<const char*>(&subj.startTime), sizeof(subj.startTime));
             outfile.write(reinterpret_cast<const char*>(&subj.endTime), sizeof(subj.endTime));
         }
@@ -126,9 +142,11 @@ namespace Report {
         const auto& roomAllocation = schedule.getRoomAllocation();
 
         for (const auto& room : roomAllocation) {
-            cout << "Sala " << room.first + 1 << ":" << endl;
+            wcout << L"Sala " << room.first + 1 << L":" << endl; // wcout para wstring
             for (const auto& subj : room.second) {
-                cout << "  Matéria: " << subj.name << " - Horário: " << subj.startTime << " às " << subj.endTime << endl;
+                wcout << L"  Matéria: " << subj.name // wcout para wstring
+                          << L" - Horário: " << subj.startTime 
+                          << L" às " << subj.endTime << endl;
             }
         }
     }
@@ -139,7 +157,8 @@ int main() {
 
     // Carregar dados persistidos se existirem
     if (!Persistence::loadSchedule(schedule)) {
-        cout << "Nenhum dado existente encontrado. Criando um novo agendamento." << endl;
+        cout << "Nenhum dado existente encontrado. "
+                  << "Criando um novo agendamento." << endl;
     }
 
     int opcao;
@@ -150,7 +169,7 @@ int main() {
         cout << "Escolha uma opção: ";
         cin >> opcao;
 
-        switch(opcao) {
+        switch (opcao) {
             case 1:
                 schedule.addSubject();
                 Persistence::saveSchedule(schedule);
