@@ -2,7 +2,7 @@
 
 using namespace std;
 
-// Classe para representar uma matéria
+// Classe para representar uma materia
 class Subject {
 public:
     string name;
@@ -11,7 +11,7 @@ public:
 
     Subject(string n, int start, int end) : name(n), startTime(start), endTime(end) {}
 
-    // Operador < para comparação
+    // Operador < para comparacao
     bool operator<(const Subject& other) const {
         if (endTime != other.endTime)
             return endTime < other.endTime;
@@ -27,30 +27,19 @@ private:
 
     void allocateRooms() {
         roomAllocation.clear();
+        sort(subjects.begin(), subjects.end());
 
-        vector<pair<int, Subject>> events;
         for (const auto& subj : subjects) {
-            events.emplace_back(subj.startTime, subj);
-            events.emplace_back(subj.endTime, subj);
-        }
-
-        sort(events.begin(), events.end(), [](const auto& a, const auto& b) {
-            return a.first < b.first;
-        });
-
-        int roomCount = 0;
-        map<Subject, int> activeSubjects;
-
-        for (const auto& event : events) {
-            if (activeSubjects.find(event.second) == activeSubjects.end()) {
-                int assignedRoom = roomCount++;
-                roomAllocation[assignedRoom].push_back(event.second);
-                activeSubjects[event.second] = assignedRoom;
-            } else {
-                int room = activeSubjects[event.second];
-                if (event.first == event.second.endTime) {
-                    activeSubjects.erase(event.second);
+            bool allocated = false;
+            for (auto& room : roomAllocation) {
+                if (room.second.back().endTime <= subj.startTime) {
+                    room.second.push_back(subj);
+                    allocated = true;
+                    break;
                 }
+            }
+            if (!allocated) {
+                roomAllocation[roomAllocation.size()].push_back(subj);
             }
         }
     }
@@ -58,14 +47,18 @@ private:
 public:
     void addSubject() {
         string name;
+        string startTimeStr, endTimeStr;
         int start, end;
 
-        cout << "Nome da matéria: ";
+        cout << "Nome da materia: ";
         cin >> name;
-        cout << "Horário de início (em formato 24h, ex: 1300): ";
-        cin >> start;
-        cout << "Horário de término (em formato 24h, ex: 1500): ";
-        cin >> end;
+        cout << "Horario de inicio (hh:mm): ";
+        cin >> startTimeStr;
+        cout << "Horario de termino (hh:mm): ";
+        cin >> endTimeStr;
+
+        start = stoi(startTimeStr.substr(0, 2)) * 100 + stoi(startTimeStr.substr(3, 2));
+        end = stoi(endTimeStr.substr(0, 2)) * 100 + stoi(endTimeStr.substr(3, 2));
 
         subjects.emplace_back(name, start, end);
         allocateRooms();
@@ -84,7 +77,7 @@ public:
     }
 };
 
-// Funções para persistência dos dados
+// Funcoes para persistencia dos dados
 namespace Persistence {
     bool loadSchedule(Schedule& schedule) {
         ifstream infile("schedule.dat", ios::binary);
@@ -120,7 +113,7 @@ namespace Persistence {
     }
 }
 
-// Função para gerar o relatório
+// Funcao para gerar o relatorio
 namespace Report {
     void generateReport(const Schedule& schedule) {
         const auto& roomAllocation = schedule.getRoomAllocation();
@@ -128,7 +121,7 @@ namespace Report {
         for (const auto& room : roomAllocation) {
             cout << "Sala " << room.first + 1 << ":" << endl;
             for (const auto& subj : room.second) {
-                cout << "  Matéria: " << subj.name << " - Horário: " << subj.startTime << " às " << subj.endTime << endl;
+                cout << "  Materia: " << subj.name << " - Horario: " << subj.startTime << " as " << subj.endTime << endl;
             }
         }
     }
@@ -144,10 +137,10 @@ int main() {
 
     int opcao;
     do {
-        cout << "1. Adicionar matéria" << endl;
-        cout << "2. Gerar relatório" << endl;
+        cout << "1. Adicionar materia" << endl;
+        cout << "2. Gerar relatorio" << endl;
         cout << "3. Sair" << endl;
-        cout << "Escolha uma opção: ";
+        cout << "Escolha uma opcao: ";
         cin >> opcao;
 
         switch(opcao) {
@@ -162,7 +155,7 @@ int main() {
                 cout << "Saindo..." << endl;
                 break;
             default:
-                cout << "Opção inválida." << endl;
+                cout << "Opcao invalida." << endl;
         }
     } while (opcao != 3);
 
