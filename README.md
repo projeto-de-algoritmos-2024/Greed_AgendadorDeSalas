@@ -14,6 +14,11 @@ O Agendador de Salas é um projeto baseado no algoritmo Interval Partitioning qu
 
 ## Screenshots
 Adicione 3 ou mais screenshots do projeto em funcionamento.
+![image](https://github.com/user-attachments/assets/f7c6d0b7-e0bf-40bd-8b52-ce519cb5d31f)
+
+![image](https://github.com/user-attachments/assets/c0b989ed-5314-47ac-a064-94433d73b880)
+
+
 ![image](https://github.com/user-attachments/assets/d202c89f-5220-480b-9375-5cbf70c0f64b)
 
 
