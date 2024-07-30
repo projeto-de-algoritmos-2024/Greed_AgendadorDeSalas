@@ -12,6 +12,9 @@
 ## Sobre 
 O Agendador de Salas é um projeto baseado no algoritmo Interval Partitioning que consiste em agendar espaços a fim de evitar conflitos de agenda, no caso do projeto destinamos salas para serem agendadas por determinadas matérias e usamos o algoritmo para chegar na solução mais rápida para isso.. 
 
+## Link do vídeo
+[YouTube](https://youtu.be/Chc4NWRqyvg)
+
 ## Screenshots
 
 ![image](https://github.com/user-attachments/assets/f7c6d0b7-e0bf-40bd-8b52-ce519cb5d31f)
